@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,24 +36,15 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     FloatingActionButton floatingActionButton;
     DatabaseHelper databaseHelper;
-    MyAdapter myAdapter;
-    ArrayList<Contacts>contactsArrayList;
-    Dialog dialog;
-    Button addorUpdatebutton;
-    Button cancelbutton;
-    EditText editTextname;
-    EditText editTextemail;
-    String updatedname;
-    String updatedemail;
+
     RecyclerView.LayoutManager layoutManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recyclerView=findViewById(R.id.recyclerview);
-        contactsArrayList=new ArrayList<>();
-        recyclerView.setHasFixedSize(true);
 
+        init();//initialising objects
+        recyclerView=findViewById(R.id.recyclerview);
 
         floatingActionButton=findViewById(R.id.floating);
 
@@ -61,152 +53,33 @@ public class MainActivity extends AppCompatActivity {
         LoadAllDataInBackGround();//this is the background task,prevents screen from going inactive due to data loading
 
         //Log.i("info s ",String.valueOf(contactsArrayList.size()));
-        myAdapter=new MyAdapter(getApplicationContext(),contactsArrayList,MainActivity.this);
+
         layoutManager=new LinearLayoutManager(this);
 
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(AppObjects.myAdapter);
 
-        recyclerView.setAdapter(myAdapter);
-
-        dialog=new Dialog(this);
-        dialog.setContentView(R.layout.add_layout);
-
-        addorUpdatebutton=dialog.findViewById(R.id.add);
-        cancelbutton=dialog.findViewById(R.id.cancel);
-        editTextname=dialog.findViewById(R.id.name);
-        editTextemail=dialog.findViewById(R.id.email);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addorEdit(false,null,-1);
+                Intent intent=new Intent(getApplicationContext(),AddorModifyActivity.class);
+                intent.putExtra("BoolValue",false); // true for modify and false for add
+                startActivity(intent);
             }
         });
 
     }
-    public void insert(){
-        String name=editTextname.getText().toString();
-        String email=editTextemail.getText().toString();
-        if(TextUtils.isEmpty(name) || TextUtils.isEmpty(email)){
-            Toast.makeText(getApplicationContext(),"Please Do Not Leave Any Field Empty",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        long id=databaseHelper.contactsDAO().addData(new Contacts(name,email));
-
-        contactsArrayList.add(0,new Contacts((int)id,name,email));
-
-        editTextname.setText("");
-        editTextemail.setText("");
-        dialog.dismiss();
-        myAdapter.notifyDataSetChanged();
-    }
-
-    public void updateDataSet(String name,String email,int position){
-        //Log.i("info","reached at updateDataSet");
-        Contacts contacts=contactsArrayList.get(position);
-        contacts.setName(name);
-        contacts.setEmail(email);
-
-        databaseHelper.contactsDAO().updateData(contacts);
-        contactsArrayList.set(position,contacts);
-        //Log.i("info",contactsArrayList.get(position).getName());
-        myAdapter.notifyDataSetChanged();
-
-    }
-
-    public void delete(String name,String email,int position){
-        Contacts contacts=new Contacts(contactsArrayList.get(position).getKey_Id(),name,email);
-        contactsArrayList.remove(position);
-        myAdapter.notifyDataSetChanged();
-        databaseHelper.contactsDAO().deleteData(contacts);
-    }
-
-    public void addorEdit( boolean status,final Contacts contacts, int position) {
-        //Toast.makeText(this," "+status,Toast.LENGTH_SHORT).show();
-        //Log.i("info",""+status);
-        if(status){//it means data needs to updated or deleted and not to be added
-            editTextname.setText(contactsArrayList.get(position).getName());
-            editTextemail.setText(contactsArrayList.get(position).getEmail());
-            addorUpdatebutton.setText("Update");
-            cancelbutton.setText("Delete");
-            dialog.show();
-            Log.i("info","reached at update");
-            updatedname=editTextname.getText().toString();
-            updatedemail = editTextemail.getText().toString();
-            editTextname.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    updatedname =editTextname.getText().toString();
-                    updatedemail =editTextemail.getText().toString();
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-
-                }
-            });
-            editTextemail.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    updatedname =editTextname.getText().toString();
-                    updatedemail =editTextemail.getText().toString();
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-
-                }
-            });
-            addorUpdatebutton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                        //Log.i("info","update pressed"+updatedname+" -> "+ updatedemail);
-                        updateDataSet(updatedname, updatedemail,position);
-                        dialog.dismiss();
-
-                }
-            });
-            cancelbutton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    delete(updatedname, updatedemail,position);
-                    dialog.dismiss();
-                }
-            });
-        }else{// it means it needs to be added
-            editTextname.setText("");
-            editTextemail.setText("");
-            addorUpdatebutton.setText("Add");
-            cancelbutton.setText("Cancel");
-            dialog.show();
-
-            addorUpdatebutton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                            insert();
-                }
-            });
-            cancelbutton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    dialog.dismiss();
-                }
-            });
-        }
+    public void init(){
+        Toast.makeText(getApplicationContext(),"hgf",Toast.LENGTH_SHORT).show();
+        AppObjects.notesArrayList=new ArrayList<>();
+        AppObjects.myAdapter=new MyAdapter(getApplicationContext(),AppObjects.notesArrayList,MainActivity.this);
     }
 
     public void LoadAllDataInBackGround(){
+
+        Toast.makeText(getApplicationContext(),String.valueOf(AppObjects.i++),Toast.LENGTH_SHORT).show();
         //ExecutorService is a JDK API that simplifies running tasks in asynchronous mode.
         ExecutorService executor= Executors.newSingleThreadExecutor();
 
@@ -215,11 +88,11 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                contactsArrayList.addAll(databaseHelper.contactsDAO().getAllContacts());
+                AppObjects.notesArrayList.addAll(databaseHelper.notesDAO().getAllNotes());
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        myAdapter.notifyDataSetChanged();
+                        AppObjects.myAdapter.notifyDataSetChanged();
                     }
                 });
             }
@@ -236,9 +109,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.deleteAllmenu) {
-            contactsArrayList.clear();
-            databaseHelper.contactsDAO().deleteAllData();
-            myAdapter.notifyDataSetChanged();
+            AppObjects.notesArrayList.clear();;
+            databaseHelper.notesDAO().deleteAllData();
+            AppObjects.myAdapter.notifyDataSetChanged();
         }
         return true;
     }

@@ -14,7 +14,7 @@ import androidx.room.RoomDatabase;
 
 import java.util.ArrayList;
 
-@Database(entities = Contacts.class,exportSchema = false, version = 1)
+@Database(entities = Notes.class,exportSchema = false, version = 2)
 public abstract class DatabaseHelper extends RoomDatabase {
     public static final String DATABASE_NAME = "contactsdb";
     public static DatabaseHelper instance;
@@ -29,5 +29,5 @@ public abstract class DatabaseHelper extends RoomDatabase {
         return instance;
     }
 
-    public abstract ContactsDAO contactsDAO();
+    public abstract NotesDAO notesDAO();
 }

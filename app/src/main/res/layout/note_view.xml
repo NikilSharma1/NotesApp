@@ -16,20 +16,20 @@
             android:layout_width="match_parent"
             android:orientation="vertical"
             android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/name"
-                android:padding="4dp"
-                android:layout_width="match_parent"
-                android:text="Name"
-                android:textSize="24sp"
-                android:layout_height="wrap_content">
+<!--            <TextView-->
+<!--                android:id="@+id/name"-->
+<!--                android:padding="4dp"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:text="Name"-->
+<!--                android:textSize="24sp"-->
+<!--                android:layout_height="wrap_content">-->
 
-            </TextView>
+<!--            </TextView>-->
             <TextView
-                android:id="@+id/email"
+                android:id="@+id/note"
                 android:padding="4dp"
                 android:layout_width="match_parent"
-                android:text="Email"
+                android:text="This is your Note"
                 android:textSize="24sp"
                 android:layout_height="wrap_content">
 
